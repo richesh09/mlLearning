@@ -1,31 +1,12 @@
 
-# coding: utf-8
-
-# # MNIST with CNN
-
-# In[1]:
-
-
 import tensorflow as tf
 
-
-# In[2]:
-
-
 from tensorflow.examples.tutorials.mnist import input_data
-
-
-# In[3]:
-
 
 mnist = input_data.read_data_sets("fashiomnist/",one_hot=True)
 
 
-# ### Helper Functions
-
 # Function to help intialize random weights for fully connected or convolutional layers, we leave the shape attribute as a parameter for this.
-
-# In[4]:
 
 
 def init_weights(shape):
@@ -34,9 +15,6 @@ def init_weights(shape):
 
 
 # Same as init_weights, but for the biases
-
-# In[5]:
-
 
 def init_bias(shape):
     init_bias_vals = tf.constant(0.1, shape=shape)
@@ -60,10 +38,6 @@ def init_bias(shape):
 # 3. For each patch, right-multiplies the filter matrix and the image patch
 #    vector.
 # 
-
-# In[6]:
-
-
 def conv2d(x, W):
     return tf.nn.conv2d(x, W, strides=[1, 1, 1, 1], padding='SAME')
 
@@ -81,18 +55,12 @@ def conv2d(x, W):
 #         window for each dimension of the input tensor.
 #       padding: A string, either `'VALID'` or `'SAME'`. 
 
-# In[7]:
-
-
 def max_pool_2by2(x):
     return tf.nn.max_pool(x, ksize=[1, 2, 2, 1],
                           strides=[1, 2, 2, 1], padding='SAME')
 
 
 # Using the conv2d function, we'll return an actual convolutional layer here that uses an ReLu activation.
-
-# In[8]:
-
 
 def convolutional_layer(input_x, shape):
     W = init_weights(shape)
@@ -101,9 +69,6 @@ def convolutional_layer(input_x, shape):
 
 
 # This is a normal fully connected layer
-
-# In[9]:
-
 
 def normal_full_layer(input_layer, size):
     input_size = int(input_layer.get_shape()[1])
@@ -114,28 +79,14 @@ def normal_full_layer(input_layer, size):
 
 # ### Placeholders
 
-# In[10]:
-
-
 x = tf.placeholder(tf.float32,shape=[None,784])
-
-
-# In[11]:
-
 
 y_true = tf.placeholder(tf.float32,shape=[None,10])
 
 
 # ### Layers
 
-# In[12]:
-
-
 x_image = tf.reshape(x,[-1,28,28,1])
-
-
-# In[13]:
-
 
 # Using a 6by6 filter here, used 5by5 in video, you can play around with the filter size
 # You can change the 32 output, that essentially represents the amount of filters used
@@ -144,19 +95,11 @@ x_image = tf.reshape(x,[-1,28,28,1])
 convo_1 = convolutional_layer(x_image,shape=[6,6,1,32])
 convo_1_pooling = max_pool_2by2(convo_1)
 
-
-# In[14]:
-
-
 # Using a 6by6 filter here, used 5by5 in video, you can play around with the filter size
 # You can actually change the 64 output if you want, you can think of that as a representation
 # of the amount of 6by6 filters used.
 convo_2 = convolutional_layer(convo_1_pooling,shape=[6,6,32,64])
 convo_2_pooling = max_pool_2by2(convo_2)
-
-
-# In[15]:
-
 
 # Why 7 by 7 image? Because we did 2 pooling layers, so (28/2)/2 = 7
 # 64 then just comes from the output of the previous Convolution
@@ -164,52 +107,28 @@ convo_2_flat = tf.reshape(convo_2_pooling,[-1,7*7*64])
 full_layer_one = tf.nn.relu(normal_full_layer(convo_2_flat,1024))
 
 
-# In[16]:
-
-
 # NOTE THE PLACEHOLDER HERE!
 hold_prob = tf.placeholder(tf.float32)
 full_one_dropout = tf.nn.dropout(full_layer_one,keep_prob=hold_prob)
 
-
-# In[17]:
-
-
 y_pred = normal_full_layer(full_one_dropout,10)
 
 
-# ### Loss Function
-
-# In[18]:
-
+# Loss Function
 
 cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=y_true,logits=y_pred))
 
-
-# ### Optimizer
-
-# In[19]:
-
-
+# Optimizer
 optimizer = tf.train.AdamOptimizer(learning_rate=0.01)
 train = optimizer.minimize(cross_entropy)
 
 
-# ### Intialize Variables
-
-# In[20]:
-
-
+# Intialize Variables
 init = tf.global_variables_initializer()
 
 
-# ### Session
-
-# In[ ]:
-
-
+# Session
 steps = 5000
-
 with tf.Session() as sess:
     
     sess.run(init)
@@ -233,5 +152,3 @@ with tf.Session() as sess:
             print(sess.run(acc,feed_dict={x:mnist.test.images,y_true:mnist.test.labels,hold_prob:1.0}))
             print('\n')
 
-
-# ## Great Job!
